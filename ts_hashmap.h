@@ -17,7 +17,7 @@ typedef struct ts_hashmap_t {
 } ts_hashmap_t;
 
 // function declarations
-ts_hashmap_t *initmap(int capacity);
+ts_hashmap_t *initmap (int capacity);
 int get(ts_hashmap_t *map, int key);
 int put(ts_hashmap_t *map, int key, int value);
 int del(ts_hashmap_t *map, int key);

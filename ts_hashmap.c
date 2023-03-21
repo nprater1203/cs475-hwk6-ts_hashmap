@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #include "ts_hashmap.h"
 
 /**
@@ -13,7 +14,27 @@
  */
 ts_hashmap_t *initmap(int capacity) {
   // TODO
-  return NULL;
+  ts_hashmap_t* map = malloc(capacity * sizeof(struct ts_entry_t)) ;
+  map->size = 0;
+  map->capacity = capacity;
+  
+  //map->table = malloc(capacity * sizeof(ts_entry_t));
+  // for(int i = 0; i < capacity; i++)
+  // {
+  //   map->table[i] = malloc(sizeof(struct ts_entry_t));
+  // }
+
+
+  // for(int i = 0; i < capacity; i++)
+  // {
+  //   map->table[i] = malloc(capacity * sizeof(struct ts_entry_t));
+  //   map->table[i] = NULL;
+  // }
+
+
+  
+  
+  return map;
 }
 
 /**
@@ -24,6 +45,14 @@ ts_hashmap_t *initmap(int capacity) {
  */
 int get(ts_hashmap_t *map, int key) {
   // TODO
+
+  for(int i = 0; i < map->capacity; i++)
+  {
+    if(map->table[i]->key == key)
+    {
+      return map->table[i]->value;
+    }
+  }
   return INT_MAX;
 }
 
@@ -36,6 +65,28 @@ int get(ts_hashmap_t *map, int key) {
  */
 int put(ts_hashmap_t *map, int key, int value) {
   // TODO
+  // bool notEnd = true;
+
+  // if(notEnd)
+  // {
+  //   for(int i = 0 ; i < map->size; i++)
+  //   {
+  //     if(map->table[i]->key == key)
+  //     {
+  //       int returnVal = map->table[i]->value;
+  //       map->table[i]->value = value;
+  //       return returnVal;
+  //       //notEnd = false;
+  //     }
+  //   }
+  // }
+  // else
+  // {
+    printf("IN HERE");
+    map->table[map->size]->key = key;
+    map->table[map->size]->value = value;
+    map->size++;
+  //}
   return INT_MAX;
 }
 
@@ -47,6 +98,19 @@ int put(ts_hashmap_t *map, int key, int value) {
  */
 int del(ts_hashmap_t *map, int key) {
   // TODO
+  for(int i = 0; i < map->size; i++)
+  {
+    if(map->table[i]->key == key)
+    {
+      int returnVal = map->table[i]->value;
+      for(int j = i; j > map->size; j++)
+      {
+        map->table[j]->key = map->table[j]->key;
+        map->table[j]->value = map->table[j]->value;
+      }
+      return returnVal;
+    }
+  }
   return INT_MAX;
 }
 
