@@ -14,15 +14,17 @@
  */
 ts_hashmap_t *initmap(int capacity) {
   // TODO
-  ts_hashmap_t* map = malloc(capacity * sizeof(struct ts_entry_t)) ;
+  ts_hashmap_t* map = (ts_hashmap_t*) malloc(sizeof(ts_hashmap_t)) ;
+  map->table = malloc(capacity * sizeof(ts_entry_t*));
   map->size = 0;
   map->capacity = capacity;
   
-  //map->table = malloc(capacity * sizeof(ts_entry_t));
-  // for(int i = 0; i < capacity; i++)
-  // {
-  //   map->table[i] = malloc(sizeof(struct ts_entry_t));
-  // }
+  
+  for(int i = 0; i < capacity; i++)
+  {
+    map->table[i] = NULL;
+    //map->table[i]->next = NULL;
+  }
 
 
   // for(int i = 0; i < capacity; i++)
@@ -46,12 +48,15 @@ ts_hashmap_t *initmap(int capacity) {
 int get(ts_hashmap_t *map, int key) {
   // TODO
 
-  for(int i = 0; i < map->capacity; i++)
+  int index = key % map->capacity;
+  ts_entry_t *tempPointer = map->table[index];
+  while(tempPointer != NULL)
   {
-    if(map->table[i]->key == key)
+    if(tempPointer->key == key)
     {
-      return map->table[i]->value;
+      return tempPointer->value;
     }
+    tempPointer = tempPointer->next;
   }
   return INT_MAX;
 }
@@ -66,25 +71,48 @@ int get(ts_hashmap_t *map, int key) {
 int put(ts_hashmap_t *map, int key, int value) {
   // TODO
   // bool notEnd = true;
+    //printf("IN HERE");
+    //int counter = 0;
+    int index = key % map->capacity;
+    ts_entry_t *tempPointer = map->table[index];
+    ts_entry_t *newPair = malloc(sizeof(ts_entry_t));
+    newPair->key = key;
+    newPair->value = value;
+    newPair->next = NULL;
+    if(tempPointer == NULL)
+    {
+      //printf("FIRST");
+      map->table[index] = newPair;
+    }
+    else
+    {
+      //int count =0;
 
-  // if(notEnd)
-  // {
-  //   for(int i = 0 ; i < map->size; i++)
-  //   {
-  //     if(map->table[i]->key == key)
-  //     {
-  //       int returnVal = map->table[i]->value;
-  //       map->table[i]->value = value;
-  //       return returnVal;
-  //       //notEnd = false;
-  //     }
-  //   }
-  // }
-  // else
-  // {
-    printf("IN HERE");
-    map->table[map->size]->key = key;
-    map->table[map->size]->value = value;
+      while(tempPointer->next != NULL)
+      {
+        //count++;
+        printf("TESTING %d against %d\n", tempPointer->key,key);
+
+        if(tempPointer->next->key == key)
+        {
+          printf("IN HERE\n");
+          int oldValue = tempPointer->next->value;
+          tempPointer->next->value = value;
+          //map->table[index] = tempPointer;
+          return oldValue;
+        }
+        //map->table[index] = map->table[index]->next;
+        //printf("Value at %d = %d\n", tempPointer->key,tempPointer->value);
+        tempPointer = tempPointer->next;
+      }
+      //printf("COUNT = %d\n",count);
+      //printf("New Pair key , value = %d  ,  %d\n",newPair->key,newPair->value);
+
+      tempPointer->next = newPair;
+      //map->table[index]->next = tempPointer;
+    }
+    //printf("Map value at %d = %d\n", map->table[index]->key,map->table[index]->value);
+
     map->size++;
   //}
   return INT_MAX;
@@ -98,19 +126,10 @@ int put(ts_hashmap_t *map, int key, int value) {
  */
 int del(ts_hashmap_t *map, int key) {
   // TODO
-  for(int i = 0; i < map->size; i++)
-  {
-    if(map->table[i]->key == key)
-    {
-      int returnVal = map->table[i]->value;
-      for(int j = i; j > map->size; j++)
-      {
-        map->table[j]->key = map->table[j]->key;
-        map->table[j]->value = map->table[j]->value;
-      }
-      return returnVal;
-    }
-  }
+  int index = key % map->capacity;
+
+  
+
   return INT_MAX;
 }
 
