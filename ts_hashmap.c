@@ -47,6 +47,7 @@ ts_hashmap_t *initmap(int capacity) {
  */
 int get(ts_hashmap_t *map, int key) {
   // TODO
+  //pthread_mutex_lock();
 
   int index = key % map->capacity;
   ts_entry_t *tempPointer = map->table[index];
@@ -58,6 +59,7 @@ int get(ts_hashmap_t *map, int key) {
     }
     tempPointer = tempPointer->next;
   }
+ // pthread_mutex_unlock();
   return INT_MAX;
 }
 
@@ -73,6 +75,7 @@ int put(ts_hashmap_t *map, int key, int value) {
   // bool notEnd = true;
     //printf("IN HERE");
     //int counter = 0;
+   // pthread_mutex_lock();
     int index = key % map->capacity;
     ts_entry_t *tempPointer = map->table[index];
     ts_entry_t *newPair = malloc(sizeof(ts_entry_t));
@@ -95,6 +98,8 @@ int put(ts_hashmap_t *map, int key, int value) {
           //printf("IN HERE\n");
           int oldValue = tempPointer->next->value;
           tempPointer->next->value = value;
+         // pthread_mutex_unlock();
+
           return oldValue;
         }
         tempPointer = tempPointer->next;
@@ -102,6 +107,7 @@ int put(ts_hashmap_t *map, int key, int value) {
       tempPointer->next = newPair;
     }
     map->size++;
+   // pthread_mutex_unlock();
 
   return INT_MAX;
 }
