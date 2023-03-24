@@ -86,35 +86,23 @@ int put(ts_hashmap_t *map, int key, int value) {
     }
     else
     {
-      //int count =0;
-
       while(tempPointer->next != NULL)
       {
-        //count++;
-        printf("TESTING %d against %d\n", tempPointer->key,key);
+       // printf("TESTING %d against %d\n", tempPointer->key,key);
 
         if(tempPointer->next->key == key)
         {
-          printf("IN HERE\n");
+          //printf("IN HERE\n");
           int oldValue = tempPointer->next->value;
           tempPointer->next->value = value;
-          //map->table[index] = tempPointer;
           return oldValue;
         }
-        //map->table[index] = map->table[index]->next;
-        //printf("Value at %d = %d\n", tempPointer->key,tempPointer->value);
         tempPointer = tempPointer->next;
       }
-      //printf("COUNT = %d\n",count);
-      //printf("New Pair key , value = %d  ,  %d\n",newPair->key,newPair->value);
-
       tempPointer->next = newPair;
-      //map->table[index]->next = tempPointer;
     }
-    //printf("Map value at %d = %d\n", map->table[index]->key,map->table[index]->value);
-
     map->size++;
-  //}
+
   return INT_MAX;
 }
 
@@ -127,8 +115,24 @@ int put(ts_hashmap_t *map, int key, int value) {
 int del(ts_hashmap_t *map, int key) {
   // TODO
   int index = key % map->capacity;
+  ts_entry_t *tempPointer = map->table[index];
 
-  
+  while(tempPointer->next != NULL)
+  {
+    if(tempPointer->next->key == key)
+    {
+      int val = tempPointer->value;
+      //free(tempPointer->next);
+      //tempPointer->next = NULL;
+      //printf("Node key to connect to %d\n", tempPointer->next->next->key);
+      tempPointer->next = tempPointer->next->next;
+      
+      map->size--;
+      return val;
+    }
+
+    tempPointer = tempPointer->next;
+  }
 
   return INT_MAX;
 }
