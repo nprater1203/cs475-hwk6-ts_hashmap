@@ -4,7 +4,25 @@
 #include <stdlib.h>
 #include "ts_hashmap.h"
 
-pthread_t *locks;
+pthread_mutex_t *locks;
+
+void* putThread(void* args)
+{
+	printf("This is a put thread\n");
+	return NULL;
+}
+
+void* delThread(void* args)
+{
+	printf("This is a del thread\n");
+	return NULL;
+}
+
+void* getThread(void* args)
+{
+	printf("THis ia a get thread\n");
+	return NULL;
+}
 
 int main(int argc, char *argv[]) {
 	if (argc < 3) {
@@ -19,26 +37,26 @@ int main(int argc, char *argv[]) {
 	int capacity = (unsigned int) atoi(argv[2]);
 
 	ts_hashmap_t* map = initmap(capacity);
-
-	locks = malloc(capacity * sizeof(pthread_t));
+	locks = (pthread_mutex_t*) malloc(sizeof(pthread_mutex_t));
+	pthread_mutex_init(locks, NULL);	
 	pthread_t *threads = (pthread_t*) malloc(num_threads * sizeof(pthread_t));
 	for (int i = 0; i < num_threads; i++) {
 		//printf("Creating Thread %d\n",i);
 		if(i < num_threads / 3)
 		{
 			//PUT
-			int randNum = rand() % 100;
-			pthread_create(&threads[i], NULL, NULL, NULL);
+			//int randNum = rand() % 100;
+			pthread_create(&threads[i], NULL, putThread, NULL);
 		}
 		else if(i < num_threads * (2/3) && i > num_threads / 3)
 		{
 			//GET
-			pthread_create(&threads[i], NULL, NULL, NULL);
+			pthread_create(&threads[i], NULL, getThread, NULL);
 		}
 		else
 		{
 			//DEL
-			pthread_create(&threads[i], NULL, NULL, NULL);
+			pthread_create(&threads[i], NULL, delThread, NULL);
 		}
 	}
 

@@ -104,6 +104,15 @@ int put(ts_hashmap_t *map, int key, int value) {
         }
         tempPointer = tempPointer->next;
       }
+      if(tempPointer->key == key)
+      {
+          //printf("IN HERE\n");
+          int oldValue = tempPointer->value;
+          tempPointer->value = value;
+          // pthread_mutex_unlock();
+
+          return oldValue;
+      }
       tempPointer->next = newPair;
     }
     map->size++;

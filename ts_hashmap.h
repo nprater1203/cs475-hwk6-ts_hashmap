@@ -1,6 +1,6 @@
 #include <pthread.h>
 
-extern pthread_t *locks;
+extern pthread_mutex_t *locks;
 
 // A hashmap entry stores the key, value
 // and a pointer to the next entry
