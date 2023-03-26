@@ -1,26 +1,68 @@
-
+#include <limits.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "ts_hashmap.h"
 
 pthread_mutex_t *locks;
+ts_hashmap_t *map;
+int capacity;
+int intArray[100];
+//int tempInd;
+
 
 void* putThread(void* args)
 {
-	printf("This is a put thread\n");
+
+	pthread_mutex_lock(locks);
+	//printf("This is a put thread\n");
+	time_t t;
+	srand((unsigned) time(&t));
+
+	for(int i = 0; i < 30; i++)
+	{
+		int randNum = rand() % 100;
+		//intArray[]
+		put(map,randNum,randNum);
+		// Everu 5th key gets a new value
+		if(i % 5 == 0)
+		{
+			put(map,randNum,randNum+100);
+		}
+	}
+	
+	pthread_mutex_unlock(locks);
 	return NULL;
 }
 
 void* delThread(void* args)
 {
-	printf("This is a del thread\n");
+	pthread_mutex_lock(locks);
+	//printf("This is a del thread\n");
+	for(int i = 0; i < 30; i++)
+	{
+		int randNum = rand() % 100;
+		if(get(map, randNum) != INT_MAX)
+		{
+			del(map,randNum);
+		}
+	}
+	pthread_mutex_unlock(locks);
+
 	return NULL;
 }
 
 void* getThread(void* args)
 {
-	printf("THis ia a get thread\n");
+	pthread_mutex_lock(locks);
+	//printf("This is a get thread\n");
+	for(int i = 0; i < 30; i++)
+	{
+		int randNum = rand() % 100;
+		printf("Getting %d -- %d\n", randNum, get(map, randNum));
+	}
+	pthread_mutex_unlock(locks);
+
 	return NULL;
 }
 
@@ -29,32 +71,40 @@ int main(int argc, char *argv[]) {
 		printf("Usage: %s <num threads> <hashmap capacity>\n", argv[0]);
 		return 1;
 	}
-	time_t t;
-	srand((unsigned) time(&t));
+	//time_t t;
+	// srand((unsigned) time(&t));
 
   	//srand(time(NULL));
 	int num_threads = atoi(argv[1]);
-	int capacity = (unsigned int) atoi(argv[2]);
+	capacity = (unsigned int) atoi(argv[2]);
 
-	ts_hashmap_t* map = initmap(capacity);
+	map = initmap(capacity);
 	locks = (pthread_mutex_t*) malloc(sizeof(pthread_mutex_t));
 	pthread_mutex_init(locks, NULL);	
 	pthread_t *threads = (pthread_t*) malloc(num_threads * sizeof(pthread_t));
+
+	//tempInd = 0;
+	//thread_args *args = (thread_args*) malloc(numThreads * sizeof(thread_args));
+
 	for (int i = 0; i < num_threads; i++) {
-		//printf("Creating Thread %d\n",i);
-		if(i < num_threads / 3)
+		//printf("Creating Thread %d\nnum threads /3 = %d\n",i,num_threads/3);
+		if(i % 3 == 0)
 		{
+			//printf("Creating putThread\n");
 			//PUT
-			//int randNum = rand() % 100;
+
 			pthread_create(&threads[i], NULL, putThread, NULL);
 		}
-		else if(i < num_threads * (2/3) && i > num_threads / 3)
+		else if(i % 3 == 1)
 		{
+			//printf("Creating getTHread\n");
 			//GET
 			pthread_create(&threads[i], NULL, getThread, NULL);
 		}
 		else
 		{
+			//printf("Creating delThread\n");
+
 			//DEL
 			pthread_create(&threads[i], NULL, delThread, NULL);
 		}
@@ -71,18 +121,18 @@ int main(int argc, char *argv[]) {
 	// 	int randNum = rand() % 100;
 	// 	put(map,randNum,randNum);
 	// }
-	put(map,0,0);
-	put(map,1,1);
-	put(map,2,2);
-	put(map,3,3);
-	put(map,4,4);
-	put(map,5,5);
-	put(map, 2,4);
-	put(map, 3,4);
+	// put(map,0,0);
+	// put(map,1,1);
+	// put(map,2,2);
+	// put(map,3,3);
+	// put(map,4,4);
+	// put(map,5,5);
+	// put(map, 2,4);
+	// put(map, 3,4);
 
-	printf("Testing get %d: %d\n", 1 , get(map,1));
-	printf("Testing get %d: %d\n", 2 , get(map,2));
-	printf("Testing get %d: %d\n", 3 , get(map,3));
+	// printf("Testing get %d: %d\n", 1 , get(map,1));
+	// printf("Testing get %d: %d\n", 2 , get(map,2));
+	// printf("Testing get %d: %d\n", 3 , get(map,3));
 
 	//printf("Deleted key 2 value return %d\n", del(map,2));
 	//printf("Deleted key 3 value return %d\n", del(map,3));
@@ -93,6 +143,16 @@ int main(int argc, char *argv[]) {
 
 	// TODO: Write your test
 
+	pthread_mutex_unlock(locks);
+
+	free(map);
+	map = NULL;
+
+	free(locks);
+	locks = NULL;
+
+	free(threads);
+	locks = NULL;
 	return 0;
 }
 

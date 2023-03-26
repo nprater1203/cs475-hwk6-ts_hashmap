@@ -102,6 +102,14 @@ int put(ts_hashmap_t *map, int key, int value) {
 
           return oldValue;
         }
+        else if( tempPointer->key == key)
+        {
+          int oldValue = tempPointer->value;
+          tempPointer->value = value;
+         // pthread_mutex_unlock();
+
+          return oldValue;
+        }
         tempPointer = tempPointer->next;
       }
       if(tempPointer->key == key)
@@ -111,12 +119,16 @@ int put(ts_hashmap_t *map, int key, int value) {
           tempPointer->value = value;
           // pthread_mutex_unlock();
 
+          //free(newPair);
+          //newPair = NULL;
           return oldValue;
       }
       tempPointer->next = newPair;
     }
     map->size++;
    // pthread_mutex_unlock();
+   //free(newPair);
+   //newPair = NULL;
 
   return INT_MAX;
 }

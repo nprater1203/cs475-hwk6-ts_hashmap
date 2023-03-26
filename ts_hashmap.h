@@ -1,6 +1,8 @@
 #include <pthread.h>
 
 extern pthread_mutex_t *locks;
+extern int capacity;
+extern int intArray[100];
 
 // A hashmap entry stores the key, value
 // and a pointer to the next entry
@@ -17,6 +19,9 @@ typedef struct ts_hashmap_t {
    int capacity;
    int size;
 } ts_hashmap_t;
+
+extern ts_hashmap_t *map;
+
 
 // function declarations
 ts_hashmap_t *initmap (int capacity);
