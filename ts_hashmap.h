@@ -1,6 +1,6 @@
 #include <pthread.h>
 
-extern pthread_mutex_t *locks;
+extern pthread_mutex_t **locks;
 extern int capacity;
 extern int intArray[100];
 

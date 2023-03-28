@@ -50,15 +50,20 @@ int get(ts_hashmap_t *map, int key) {
   //pthread_mutex_lock();
 
   int index = key % map->capacity;
+  pthread_mutex_lock(locks[index]);
+
   ts_entry_t *tempPointer = map->table[index];
   while(tempPointer != NULL)
   {
     if(tempPointer->key == key)
     {
+      pthread_mutex_unlock(locks[index]);
       return tempPointer->value;
     }
     tempPointer = tempPointer->next;
   }
+  pthread_mutex_unlock(locks[index]);
+
  // pthread_mutex_unlock();
   return INT_MAX;
 }
@@ -75,8 +80,9 @@ int put(ts_hashmap_t *map, int key, int value) {
   // bool notEnd = true;
     //printf("IN HERE");
     //int counter = 0;
-   // pthread_mutex_lock();
+    
     int index = key % map->capacity;
+    pthread_mutex_lock(locks[index]);
     ts_entry_t *tempPointer = map->table[index];
     ts_entry_t *newPair = malloc(sizeof(ts_entry_t));
     newPair->key = key;
@@ -99,6 +105,7 @@ int put(ts_hashmap_t *map, int key, int value) {
           int oldValue = tempPointer->next->value;
           tempPointer->next->value = value;
          // pthread_mutex_unlock();
+          pthread_mutex_unlock(locks[index]);
 
           return oldValue;
         }
@@ -107,6 +114,8 @@ int put(ts_hashmap_t *map, int key, int value) {
           int oldValue = tempPointer->value;
           tempPointer->value = value;
          // pthread_mutex_unlock();
+
+          pthread_mutex_unlock(locks[index]);
 
           return oldValue;
         }
@@ -121,6 +130,8 @@ int put(ts_hashmap_t *map, int key, int value) {
 
           //free(newPair);
           //newPair = NULL;
+          pthread_mutex_unlock(locks[index]);
+
           return oldValue;
       }
       tempPointer->next = newPair;
@@ -129,6 +140,8 @@ int put(ts_hashmap_t *map, int key, int value) {
    // pthread_mutex_unlock();
    //free(newPair);
    //newPair = NULL;
+
+  pthread_mutex_unlock(locks[index]);
 
   return INT_MAX;
 }
@@ -142,6 +155,7 @@ int put(ts_hashmap_t *map, int key, int value) {
 int del(ts_hashmap_t *map, int key) {
   // TODO
   int index = key % map->capacity;
+  pthread_mutex_lock(locks[index]);
   ts_entry_t *tempPointer = map->table[index];
 
   while(tempPointer->next != NULL)
@@ -155,12 +169,15 @@ int del(ts_hashmap_t *map, int key) {
       tempPointer->next = tempPointer->next->next;
       
       map->size--;
+
+      pthread_mutex_unlock(locks[index]);
       return val;
     }
 
     tempPointer = tempPointer->next;
   }
 
+  pthread_mutex_unlock(locks[index]);
   return INT_MAX;
 }
 

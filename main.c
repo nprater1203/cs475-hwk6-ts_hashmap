@@ -4,20 +4,19 @@
 #include <stdlib.h>
 #include "ts_hashmap.h"
 
-pthread_mutex_t *locks;
+pthread_mutex_t **locks;
 ts_hashmap_t *map;
 int capacity;
-int intArray[100];
+//int intArray[100];
 //int tempInd;
 
 
 void* putThread(void* args)
 {
 
-	pthread_mutex_lock(locks);
+	//pthread_mutex_lock(locks);
 	//printf("This is a put thread\n");
-	time_t t;
-	srand((unsigned) time(&t));
+	//time_t t;
 
 	for(int i = 0; i < 30; i++)
 	{
@@ -31,13 +30,13 @@ void* putThread(void* args)
 		}
 	}
 	
-	pthread_mutex_unlock(locks);
+	//pthread_mutex_unlock(locks);
 	return NULL;
 }
 
 void* delThread(void* args)
 {
-	pthread_mutex_lock(locks);
+	//pthread_mutex_lock(locks);
 	//printf("This is a del thread\n");
 	for(int i = 0; i < 30; i++)
 	{
@@ -47,21 +46,21 @@ void* delThread(void* args)
 			del(map,randNum);
 		}
 	}
-	pthread_mutex_unlock(locks);
+	//pthread_mutex_unlock(locks);
 
 	return NULL;
 }
 
 void* getThread(void* args)
 {
-	pthread_mutex_lock(locks);
+	//pthread_mutex_lock(locks);
 	//printf("This is a get thread\n");
 	for(int i = 0; i < 30; i++)
 	{
 		int randNum = rand() % 100;
 		printf("Getting %d -- %d\n", randNum, get(map, randNum));
 	}
-	pthread_mutex_unlock(locks);
+	//pthread_mutex_unlock(locks);
 
 	return NULL;
 }
@@ -78,9 +77,18 @@ int main(int argc, char *argv[]) {
 	int num_threads = atoi(argv[1]);
 	capacity = (unsigned int) atoi(argv[2]);
 
+	time_t t;
+
+	srand((unsigned) time(&t));
+
 	map = initmap(capacity);
-	locks = (pthread_mutex_t*) malloc(sizeof(pthread_mutex_t));
-	pthread_mutex_init(locks, NULL);	
+	locks = (pthread_mutex_t**) malloc(capacity * sizeof(pthread_mutex_t*));
+	for(int i = 0; i < capacity; i++)
+	{
+		locks[i] = (pthread_mutex_t*) malloc(sizeof(pthread_mutex_t));
+		pthread_mutex_init(locks[i],NULL);
+	}
+	//pthread_mutex_init(locks, NULL);	
 	pthread_t *threads = (pthread_t*) malloc(num_threads * sizeof(pthread_t));
 
 	//tempInd = 0;
@@ -143,8 +151,31 @@ int main(int argc, char *argv[]) {
 
 	// TODO: Write your test
 
-	pthread_mutex_unlock(locks);
 
+
+	ts_entry_t *tempPtr , *tempPtrNext;
+	for(int i = 0; i < capacity; i++)
+	{
+
+		pthread_mutex_destroy(locks[i]);
+		free(locks[i]);
+		locks[i] = NULL;
+
+		tempPtr = map->table[i];
+		if(tempPtr != NULL)
+		{
+			tempPtrNext = tempPtr->next;
+			while(tempPtrNext != NULL)
+			{
+				free(tempPtr);
+				tempPtr = NULL;
+				tempPtr = tempPtrNext;
+				tempPtrNext = tempPtrNext->next;
+			}
+			free(tempPtr);
+			tempPtr = NULL;
+		}
+	}
 	free(map);
 	map = NULL;
 
@@ -152,7 +183,7 @@ int main(int argc, char *argv[]) {
 	locks = NULL;
 
 	free(threads);
-	locks = NULL;
+	threads = NULL;
 	return 0;
 }
 
