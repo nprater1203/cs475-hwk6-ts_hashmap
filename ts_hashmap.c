@@ -81,65 +81,69 @@ int put(ts_hashmap_t *map, int key, int value) {
     //printf("IN HERE");
     //int counter = 0;
     
-    int index = key % map->capacity;
-    pthread_mutex_lock(locks[index]);
-    ts_entry_t *tempPointer = map->table[index];
-    ts_entry_t *newPair = malloc(sizeof(ts_entry_t));
-    newPair->key = key;
-    newPair->value = value;
-    newPair->next = NULL;
-    if(tempPointer == NULL)
+  int index = key % map->capacity;
+  pthread_mutex_lock(locks[index]);
+  ts_entry_t *tempPointer = map->table[index];
+  ts_entry_t *newPair = malloc(sizeof(ts_entry_t));
+  newPair->key = key;
+  newPair->value = value;
+  newPair->next = NULL;
+  if(tempPointer == NULL)
+  {
+    //printf("FIRST");
+    map->table[index] = newPair;
+    // free(newPair);
+    // newPair = NULL;
+  }
+  else
+  {
+    while(tempPointer->next != NULL)
     {
-      //printf("FIRST");
-      map->table[index] = newPair;
+     // printf("TESTING %d against %d\n", tempPointer->key,key);
+      if(tempPointer->next->key == key)
+      {
+       //printf("IN HERE\n");
+        int oldValue = tempPointer->next->value;
+        tempPointer->next->value = value;
+       // pthread_mutex_unlock();
+        free(newPair);
+        newPair = NULL;
+
+        pthread_mutex_unlock(locks[index]);
+
+        return oldValue;
+      }
+      else if( tempPointer->key == key)
+      {
+        int oldValue = tempPointer->value;
+        tempPointer->value = value;
+       // pthread_mutex_unlock();
+        free(newPair);
+        newPair = NULL;
+
+        pthread_mutex_unlock(locks[index]);
+        return oldValue;
+      }
+      tempPointer = tempPointer->next;
     }
-    else
+    if(tempPointer->key == key)
     {
-      while(tempPointer->next != NULL)
-      {
-       // printf("TESTING %d against %d\n", tempPointer->key,key);
+        //printf("IN HERE\n");
+        int oldValue = tempPointer->value;
+        tempPointer->value = value;
+        // pthread_mutex_unlock();
+        free(newPair);
+        newPair = NULL;
+        pthread_mutex_unlock(locks[index]);
 
-        if(tempPointer->next->key == key)
-        {
-          //printf("IN HERE\n");
-          int oldValue = tempPointer->next->value;
-          tempPointer->next->value = value;
-         // pthread_mutex_unlock();
-          pthread_mutex_unlock(locks[index]);
-
-          return oldValue;
-        }
-        else if( tempPointer->key == key)
-        {
-          int oldValue = tempPointer->value;
-          tempPointer->value = value;
-         // pthread_mutex_unlock();
-
-          pthread_mutex_unlock(locks[index]);
-
-          return oldValue;
-        }
-        tempPointer = tempPointer->next;
-      }
-      if(tempPointer->key == key)
-      {
-          //printf("IN HERE\n");
-          int oldValue = tempPointer->value;
-          tempPointer->value = value;
-          // pthread_mutex_unlock();
-
-          //free(newPair);
-          //newPair = NULL;
-          pthread_mutex_unlock(locks[index]);
-
-          return oldValue;
-      }
-      tempPointer->next = newPair;
+        return oldValue;
     }
-    map->size++;
+    tempPointer->next = newPair;
+  }
+  map->size++;
    // pthread_mutex_unlock();
-   //free(newPair);
-   //newPair = NULL;
+  // free(newPair);
+  // newPair = NULL;
 
   pthread_mutex_unlock(locks[index]);
 
@@ -157,25 +161,84 @@ int del(ts_hashmap_t *map, int key) {
   int index = key % map->capacity;
   pthread_mutex_lock(locks[index]);
   ts_entry_t *tempPointer = map->table[index];
+  ts_entry_t *tempPtrNext = tempPointer->next;
 
-  while(tempPointer->next != NULL)
+  if(tempPointer != NULL)
   {
-    if(tempPointer->next->key == key)
+    while(tempPtrNext != NULL )
     {
-      int val = tempPointer->value;
-      //free(tempPointer->next);
-      //tempPointer->next = NULL;
-      //printf("Node key to connect to %d\n", tempPointer->next->next->key);
-      tempPointer->next = tempPointer->next->next;
-      
-      map->size--;
+      if(tempPointer->key == key)
+      {
+        int val = tempPointer->value;
+        printf("IN HERE: Deleting node with key %d\n", tempPointer->key);
+        //map->table[index] = tempPtrNext;
+        if(tempPointer->key == map->table[index]->key)
+        {
+          free(tempPointer);
+          map->table[index] = tempPtrNext;
+        }
+        else
+        {
+          free(tempPointer);
+          tempPointer = tempPtrNext;
+        }
+        map->size--;
 
-      pthread_mutex_unlock(locks[index]);
-      return val;
+        pthread_mutex_unlock(locks[index]);
+        return val;
+      }
+      if(tempPtrNext->key == key)
+      {
+        int val = tempPtrNext->value;
+        printf("Deleting node with key %d\n", tempPointer->key);
+        tempPointer->next = tempPtrNext->next;
+        free(tempPtrNext);
+        tempPtrNext = NULL;
+        
+        map->size--;
+
+        pthread_mutex_unlock(locks[index]);
+        return val;
+      }
+
+      tempPointer = tempPtrNext;
+      tempPtrNext = tempPtrNext->next;
+
     }
+    // if(tempPointer->key == key)
+    // {
+    //   printf("IN HERE");
+    //   int val = tempPtrNext->value;
+    //   printf("Deleting node with key %d\n", tempPointer->key);
+    //   //map->table[index] = tempPtrNext;
+    //   free(tempPointer);
+    //   tempPointer = NULL;
+    //   map->size--;
 
-    tempPointer = tempPointer->next;
+    //   pthread_mutex_unlock(locks[index]);
+    //   return val;
+    // }
   }
+  // if(tempPointer != NULL && tempPointer->key == key)
+  // {
+  //   int val = tempPointer->value;
+  //   printf("Deleting node with key %d\n", tempPointer->key);
+  //   free(tempPointer);
+  //   tempPointer = NULL;
+  //   // if(tempPointer->next->next == NULL)
+  //   // {
+  //   //   printf("IT IS NULL");
+  //   // }
+  //   //tempPointer->next = tempPointer->next->next;
+      
+  //   map->size--;
+  //   pthread_mutex_unlock(locks[index]);
+  //   return val;
+  // }
+
+  
+
+
 
   pthread_mutex_unlock(locks[index]);
   return INT_MAX;
