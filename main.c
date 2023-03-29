@@ -18,7 +18,7 @@ void* putThread(void* args)
 	//printf("This is a put thread\n");
 	//time_t t;
 
-	for(int i = 0; i < 30; i++)
+	for(int i = 0; i < 10; i++)
 	{
 		int randNum = rand() % 100;
 		//intArray[]
@@ -38,13 +38,14 @@ void* delThread(void* args)
 {
 	//pthread_mutex_lock(locks);
 	//printf("This is a del thread\n");
-	for(int i = 0; i < 30; i++)
+	for(int i = 0; i < 3; i++)
 	{
 		int randNum = rand() % 100;
-		if(get(map, randNum) != INT_MAX)
-		{
-			del(map,randNum);
-		}
+		// if(get(map, randNum) != INT_MAX)
+		// {
+			//printf("IN DELETE THREAD\n");
+		del(map,randNum);
+		//}
 	}
 	//pthread_mutex_unlock(locks);
 
@@ -53,15 +54,11 @@ void* delThread(void* args)
 
 void* getThread(void* args)
 {
-	//pthread_mutex_lock(locks);
-	//printf("This is a get thread\n");
 	for(int i = 0; i < 30; i++)
 	{
 		int randNum = rand() % 100;
 		printf("Getting %d -- %d\n", randNum, get(map, randNum));
 	}
-	//pthread_mutex_unlock(locks);
-
 	return NULL;
 }
 
@@ -70,15 +67,20 @@ int main(int argc, char *argv[]) {
 		printf("Usage: %s <num threads> <hashmap capacity>\n", argv[0]);
 		return 1;
 	}
-	//time_t t;
-	// srand((unsigned) time(&t));
 
-  	//srand(time(NULL));
 	int num_threads = atoi(argv[1]);
-	capacity = (unsigned int) atoi(argv[2]);
+	if(atoi(argv[2]) == 0)
+	{
+		printf("No capacity\n");
+		return 0;
+	}
+	else
+	{
+		capacity = (unsigned int) atoi(argv[2]);
+	}
+	
 
 	time_t t;
-
 	srand((unsigned) time(&t));
 
 	map = initmap(capacity);
@@ -96,6 +98,7 @@ int main(int argc, char *argv[]) {
 
 	for (int i = 0; i < num_threads; i++) {
 		//printf("Creating Thread %d\nnum threads /3 = %d\n",i,num_threads/3);
+		//printf("i %% 3 = %d\n", i%3);
 		if(i % 3 == 0)
 		{
 			//printf("Creating putThread\n");
@@ -114,6 +117,7 @@ int main(int argc, char *argv[]) {
 			//printf("Creating delThread\n");
 
 			//DEL
+			//printf("Going to del thread");
 			pthread_create(&threads[i], NULL, delThread, NULL);
 		}
 	}
@@ -142,8 +146,9 @@ int main(int argc, char *argv[]) {
 	// printf("Testing get %d: %d\n", 2 , get(map,2));
 	// printf("Testing get %d: %d\n", 3 , get(map,3));
 
-	//printf("Deleted key 2 value return %d\n", del(map,2));
-	//printf("Deleted key 3 value return %d\n", del(map,3));
+	// printf("Deleted key 2 value return %d\n", del(map,2));
+	// printf("Deleted key 1 value return %d\n", del(map,1));
+	// printf("Deleted key 4 value return %d\n", del(map,4));
 
 
 	printf("Map size: %d\n", map->size);
@@ -176,6 +181,9 @@ int main(int argc, char *argv[]) {
 			tempPtr = NULL;
 		}
 	}
+	free(map->table);
+	map->table = NULL;
+
 	free(map);
 	map = NULL;
 

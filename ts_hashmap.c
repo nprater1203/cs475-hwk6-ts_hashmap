@@ -170,7 +170,6 @@ int del(ts_hashmap_t *map, int key) {
       if(tempPointer->key == key)
       {
         int val = tempPointer->value;
-        printf("IN HERE: Deleting node with key %d\n", tempPointer->key);
         //map->table[index] = tempPtrNext;
         if(tempPointer->key == map->table[index]->key)
         {
@@ -190,7 +189,6 @@ int del(ts_hashmap_t *map, int key) {
       if(tempPtrNext->key == key)
       {
         int val = tempPtrNext->value;
-        printf("Deleting node with key %d\n", tempPointer->key);
         tempPointer->next = tempPtrNext->next;
         free(tempPtrNext);
         tempPtrNext = NULL;
