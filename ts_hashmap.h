@@ -1,3 +1,10 @@
+/*
+	Name: Nicholas Prater
+	Course: CS 481 OS
+	Professor: Dr. Chiu
+	Date: 3/28/23
+*/
+
 #include <pthread.h>
 
 extern pthread_mutex_t **locks;

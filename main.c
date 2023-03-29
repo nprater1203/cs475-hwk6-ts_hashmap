@@ -1,3 +1,10 @@
+/*
+	Name: Nicholas Prater
+	Course: CS 481 OS
+	Professor: Dr. Chiu
+	Date: 3/28/23
+*/
+
 #include <limits.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -7,48 +14,30 @@
 pthread_mutex_t **locks;
 ts_hashmap_t *map;
 int capacity;
-//int intArray[100];
-//int tempInd;
 
 
 void* putThread(void* args)
 {
-
-	//pthread_mutex_lock(locks);
-	//printf("This is a put thread\n");
-	//time_t t;
-
 	for(int i = 0; i < 10; i++)
 	{
 		int randNum = rand() % 100;
-		//intArray[]
 		put(map,randNum,randNum);
-		// Everu 5th key gets a new value
+		// Every 5th key gets a new value
 		if(i % 5 == 0)
 		{
 			put(map,randNum,randNum+100);
 		}
 	}
-	
-	//pthread_mutex_unlock(locks);
 	return NULL;
 }
 
 void* delThread(void* args)
 {
-	//pthread_mutex_lock(locks);
-	//printf("This is a del thread\n");
-	for(int i = 0; i < 3; i++)
+	for(int i = 0; i < 20; i++)
 	{
 		int randNum = rand() % 100;
-		// if(get(map, randNum) != INT_MAX)
-		// {
-			//printf("IN DELETE THREAD\n");
 		del(map,randNum);
-		//}
 	}
-	//pthread_mutex_unlock(locks);
-
 	return NULL;
 }
 
@@ -78,7 +67,6 @@ int main(int argc, char *argv[]) {
 	{
 		capacity = (unsigned int) atoi(argv[2]);
 	}
-	
 
 	time_t t;
 	srand((unsigned) time(&t));
@@ -90,39 +78,24 @@ int main(int argc, char *argv[]) {
 		locks[i] = (pthread_mutex_t*) malloc(sizeof(pthread_mutex_t));
 		pthread_mutex_init(locks[i],NULL);
 	}
-	//pthread_mutex_init(locks, NULL);	
 	pthread_t *threads = (pthread_t*) malloc(num_threads * sizeof(pthread_t));
 
-	//tempInd = 0;
-	//thread_args *args = (thread_args*) malloc(numThreads * sizeof(thread_args));
-
-	for (int i = 0; i < num_threads; i++) {
-		//printf("Creating Thread %d\nnum threads /3 = %d\n",i,num_threads/3);
-		//printf("i %% 3 = %d\n", i%3);
+	for (int i = 0; i < num_threads; i++)
+	{
 		if(i % 3 == 0)
 		{
-			//printf("Creating putThread\n");
-			//PUT
-
 			pthread_create(&threads[i], NULL, putThread, NULL);
 		}
 		else if(i % 3 == 1)
 		{
-			//printf("Creating getTHread\n");
-			//GET
 			pthread_create(&threads[i], NULL, getThread, NULL);
 		}
 		else
 		{
-			//printf("Creating delThread\n");
-
-			//DEL
-			//printf("Going to del thread");
 			pthread_create(&threads[i], NULL, delThread, NULL);
 		}
 	}
 
-	// wait for threads to finish; combine partially computed sum
 	for (int i = 0; i < num_threads; i++) 
 	{
 		pthread_join(threads[i], NULL);
@@ -151,17 +124,12 @@ int main(int argc, char *argv[]) {
 	// printf("Deleted key 4 value return %d\n", del(map,4));
 
 
-	printf("Map size: %d\n", map->size);
+	printf("\nMap size: %d\n", map->size);
 	printmap(map);
-
-	// TODO: Write your test
-
-
 
 	ts_entry_t *tempPtr , *tempPtrNext;
 	for(int i = 0; i < capacity; i++)
 	{
-
 		pthread_mutex_destroy(locks[i]);
 		free(locks[i]);
 		locks[i] = NULL;

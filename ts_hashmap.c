@@ -1,3 +1,10 @@
+/*
+	Name: Nicholas Prater
+	Course: CS 481 OS
+	Professor: Dr. Chiu
+	Date: 3/28/23
+*/
+
 #include <limits.h>
 #include <pthread.h>
 #include <stdlib.h>
@@ -23,19 +30,8 @@ ts_hashmap_t *initmap(int capacity) {
   for(int i = 0; i < capacity; i++)
   {
     map->table[i] = NULL;
-    //map->table[i]->next = NULL;
   }
 
-
-  // for(int i = 0; i < capacity; i++)
-  // {
-  //   map->table[i] = malloc(capacity * sizeof(struct ts_entry_t));
-  //   map->table[i] = NULL;
-  // }
-
-
-  
-  
   return map;
 }
 
@@ -47,7 +43,6 @@ ts_hashmap_t *initmap(int capacity) {
  */
 int get(ts_hashmap_t *map, int key) {
   // TODO
-  //pthread_mutex_lock();
 
   int index = key % map->capacity;
   pthread_mutex_lock(locks[index]);
@@ -63,8 +58,6 @@ int get(ts_hashmap_t *map, int key) {
     tempPointer = tempPointer->next;
   }
   pthread_mutex_unlock(locks[index]);
-
- // pthread_mutex_unlock();
   return INT_MAX;
 }
 
@@ -77,9 +70,6 @@ int get(ts_hashmap_t *map, int key) {
  */
 int put(ts_hashmap_t *map, int key, int value) {
   // TODO
-  // bool notEnd = true;
-    //printf("IN HERE");
-    //int counter = 0;
     
   int index = key % map->capacity;
   pthread_mutex_lock(locks[index]);
@@ -90,34 +80,25 @@ int put(ts_hashmap_t *map, int key, int value) {
   newPair->next = NULL;
   if(tempPointer == NULL)
   {
-    //printf("FIRST");
     map->table[index] = newPair;
-    // free(newPair);
-    // newPair = NULL;
   }
   else
   {
     while(tempPointer->next != NULL)
     {
-     // printf("TESTING %d against %d\n", tempPointer->key,key);
       if(tempPointer->next->key == key)
       {
-       //printf("IN HERE\n");
         int oldValue = tempPointer->next->value;
         tempPointer->next->value = value;
-       // pthread_mutex_unlock();
         free(newPair);
         newPair = NULL;
-
         pthread_mutex_unlock(locks[index]);
-
         return oldValue;
       }
-      else if( tempPointer->key == key)
+      else if(tempPointer->key == key)
       {
         int oldValue = tempPointer->value;
         tempPointer->value = value;
-       // pthread_mutex_unlock();
         free(newPair);
         newPair = NULL;
 
@@ -128,10 +109,8 @@ int put(ts_hashmap_t *map, int key, int value) {
     }
     if(tempPointer->key == key)
     {
-        //printf("IN HERE\n");
         int oldValue = tempPointer->value;
         tempPointer->value = value;
-        // pthread_mutex_unlock();
         free(newPair);
         newPair = NULL;
         pthread_mutex_unlock(locks[index]);
@@ -141,9 +120,6 @@ int put(ts_hashmap_t *map, int key, int value) {
     tempPointer->next = newPair;
   }
   map->size++;
-   // pthread_mutex_unlock();
-  // free(newPair);
-  // newPair = NULL;
 
   pthread_mutex_unlock(locks[index]);
 
@@ -161,16 +137,16 @@ int del(ts_hashmap_t *map, int key) {
   int index = key % map->capacity;
   pthread_mutex_lock(locks[index]);
   ts_entry_t *tempPointer = map->table[index];
-  ts_entry_t *tempPtrNext = tempPointer->next;
-
   if(tempPointer != NULL)
   {
+    ts_entry_t *tempPtrNext = tempPointer->next;
+
     while(tempPtrNext != NULL )
     {
       if(tempPointer->key == key)
       {
+        printf("Deleting key %d\n", tempPointer->key);
         int val = tempPointer->value;
-        //map->table[index] = tempPtrNext;
         if(tempPointer->key == map->table[index]->key)
         {
           free(tempPointer);
@@ -188,6 +164,8 @@ int del(ts_hashmap_t *map, int key) {
       }
       if(tempPtrNext->key == key)
       {
+        printf("Deleting key %d\n", tempPtrNext->key);
+
         int val = tempPtrNext->value;
         tempPointer->next = tempPtrNext->next;
         free(tempPtrNext);
@@ -201,43 +179,9 @@ int del(ts_hashmap_t *map, int key) {
 
       tempPointer = tempPtrNext;
       tempPtrNext = tempPtrNext->next;
-
     }
-    // if(tempPointer->key == key)
-    // {
-    //   printf("IN HERE");
-    //   int val = tempPtrNext->value;
-    //   printf("Deleting node with key %d\n", tempPointer->key);
-    //   //map->table[index] = tempPtrNext;
-    //   free(tempPointer);
-    //   tempPointer = NULL;
-    //   map->size--;
-
-    //   pthread_mutex_unlock(locks[index]);
-    //   return val;
-    // }
-  }
-  // if(tempPointer != NULL && tempPointer->key == key)
-  // {
-  //   int val = tempPointer->value;
-  //   printf("Deleting node with key %d\n", tempPointer->key);
-  //   free(tempPointer);
-  //   tempPointer = NULL;
-  //   // if(tempPointer->next->next == NULL)
-  //   // {
-  //   //   printf("IT IS NULL");
-  //   // }
-  //   //tempPointer->next = tempPointer->next->next;
-      
-  //   map->size--;
-  //   pthread_mutex_unlock(locks[index]);
-  //   return val;
-  // }
-
+  }              
   
-
-
-
   pthread_mutex_unlock(locks[index]);
   return INT_MAX;
 }
